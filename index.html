@@ -9,6 +9,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <!-- proj4 (must be global so georaster-layer-for-leaflet can find it) -->
+  <script src="https://unpkg.com/proj4@2.11.0/dist/proj4.js"></script>
+
   <!-- georaster (bundles geotiff v1 internally) -->
   <script src="https://unpkg.com/georaster@1.6.0/dist/georaster.browser.bundle.min.js"></script>
 
@@ -231,6 +234,21 @@ let currentGeoRaster = null;
 let bandCount = 1;
 let bandStats = []; // [{min, max}, …] one per band
 
+/* Fetch and register a proj4 definition for an EPSG code if not already known */
+async function ensureProjection(epsg) {
+  if (!epsg || epsg === 4326 || epsg === 3857) return;
+  try {
+    // Check if already defined (proj4.defs returns undefined for unknown codes)
+    if (proj4.defs('EPSG:' + epsg)) return;
+    const res = await fetch(`https://epsg.io/${epsg}.proj4`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const def = await res.text();
+    proj4.defs('EPSG:' + epsg, def);
+  } catch (e) {
+    console.warn(`Could not register EPSG:${epsg}`, e);
+  }
+}
+
 async function computeBandStats(georaster) {
   const n = georaster.numberOfRasters;
   const fallback = Array.from({ length: n }, () => ({ min: 0, max: 255 }));
@@ -353,6 +371,7 @@ async function loadCOG(url) {
       bandSelect.appendChild(opt);
     }
 
+    await ensureProjection(georaster.projection);
     currentLayer = buildLayer(georaster);
     currentLayer.addTo(map);
     map.fitBounds(currentLayer.getBounds());
