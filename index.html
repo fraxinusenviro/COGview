@@ -234,27 +234,40 @@ let currentGeoRaster = null;
 let bandCount = 1;
 let bandStats = []; // [{min, max}, …] one per band
 
-function computeBandStats(georaster) {
-  return georaster.values.map((band, i) => {
-    // Prefer embedded stats when available
-    const embMin = georaster.mins?.[i];
-    const embMax = georaster.maxs?.[i];
-    if (embMin !== undefined && embMax !== undefined && embMin !== embMax) {
-      return { min: embMin, max: embMax };
-    }
-    // Fall back to scanning pixels (skip nodata)
+async function computeBandStats(url, georaster) {
+  const n = georaster.numberOfRasters;
+  const fallback = Array.from({ length: n }, () => ({ min: 0, max: 255 }));
+
+  // 1. Use embedded stats if all bands have them and they're non-trivial
+  if (georaster.mins && georaster.maxs &&
+      georaster.mins.length === n && georaster.maxs.length === n &&
+      georaster.mins.every((v, i) => v !== undefined && georaster.maxs[i] !== undefined && v !== georaster.maxs[i])) {
+    return georaster.mins.map((min, i) => ({ min, max: georaster.maxs[i] }));
+  }
+
+  // 2. Read the smallest overview image from the TIFF to estimate stats
+  try {
+    const tiff = await GeoTIFF.fromUrl(url);
+    const imageCount = await tiff.getImageCount();
+    const overview = await tiff.getImage(imageCount - 1); // smallest overview
+    const rasters = await overview.readRasters();
     const nd = georaster.noDataValue;
-    let min = Infinity, max = -Infinity;
-    for (const row of band) {
-      for (const v of row) {
+    return Array.from({ length: n }, (_, i) => {
+      const band = rasters[i];
+      if (!band) return fallback[i];
+      let min = Infinity, max = -Infinity;
+      for (const v of band) {
         if (v === nd || v === null || v === undefined || isNaN(v)) continue;
         if (v < min) min = v;
         if (v > max) max = v;
       }
-    }
-    if (!isFinite(min)) { min = 0; max = 255; } // last-resort fallback
-    return { min, max };
-  });
+      if (!isFinite(min)) return fallback[i];
+      return { min, max };
+    });
+  } catch (e) {
+    console.warn('Could not compute band stats from overview:', e);
+    return fallback;
+  }
 }
 
 const urlInput      = document.getElementById('url-input');
@@ -328,7 +341,7 @@ async function loadCOG(url) {
     const georaster = await parseGeoraster(url);
     currentGeoRaster = georaster;
     bandCount = georaster.numberOfRasters;
-    bandStats = computeBandStats(georaster);
+    bandStats = await computeBandStats(url, georaster);
 
     /* Populate band selector */
     bandSelect.innerHTML = '';
