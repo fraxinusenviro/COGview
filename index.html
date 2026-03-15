@@ -15,8 +15,8 @@
   <!-- georaster (bundles geotiff v1 internally) -->
   <script src="https://unpkg.com/georaster@1.6.0/dist/georaster.browser.bundle.min.js"></script>
 
-  <!-- georaster-layer-for-leaflet (bundles its own geotiff v2) -->
-  <script src="https://unpkg.com/georaster-layer-for-leaflet@4.1.2/dist/v3/webpack/bundle/georaster-layer-for-leaflet.min.js"></script>
+  <!-- georaster-layer-for-leaflet 0.7.1 — reads georaster.values directly, designed for georaster 1.x -->
+  <script src="https://unpkg.com/georaster-layer-for-leaflet@0.7.1/georaster-layer-for-leaflet.min.js"></script>
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -332,7 +332,7 @@ function buildLayer(georaster) {
   const opts = {
     georaster,
     opacity,
-    resolution: 256,
+    resolution: 128,
   };
 
   const nd = georaster.noDataValue;
