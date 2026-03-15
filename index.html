@@ -232,6 +232,30 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 let currentLayer = null;
 let currentGeoRaster = null;
 let bandCount = 1;
+let bandStats = []; // [{min, max}, …] one per band
+
+function computeBandStats(georaster) {
+  return georaster.values.map((band, i) => {
+    // Prefer embedded stats when available
+    const embMin = georaster.mins?.[i];
+    const embMax = georaster.maxs?.[i];
+    if (embMin !== undefined && embMax !== undefined && embMin !== embMax) {
+      return { min: embMin, max: embMax };
+    }
+    // Fall back to scanning pixels (skip nodata)
+    const nd = georaster.noDataValue;
+    let min = Infinity, max = -Infinity;
+    for (const row of band) {
+      for (const v of row) {
+        if (v === nd || v === null || v === undefined || isNaN(v)) continue;
+        if (v < min) min = v;
+        if (v > max) max = v;
+      }
+    }
+    if (!isFinite(min)) { min = 0; max = 255; } // last-resort fallback
+    return { min, max };
+  });
+}
 
 const urlInput      = document.getElementById('url-input');
 const loadBtn       = document.getElementById('load-btn');
@@ -277,8 +301,7 @@ function buildLayer(georaster) {
     };
   } else {
     const b = band === -1 ? 0 : band;
-    const min = georaster.mins[b];
-    const max = georaster.maxs[b];
+    const { min, max } = bandStats[b] || { min: 0, max: 255 };
     opts.pixelValuesToColorFn = values => {
       const v = values[b];
       if (v === georaster.noDataValue || v === undefined) return null;
@@ -305,6 +328,7 @@ async function loadCOG(url) {
     const georaster = await parseGeoraster(url);
     currentGeoRaster = georaster;
     bandCount = georaster.numberOfRasters;
+    bandStats = computeBandStats(georaster);
 
     /* Populate band selector */
     bandSelect.innerHTML = '';
