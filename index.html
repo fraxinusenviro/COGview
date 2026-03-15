@@ -9,13 +9,10 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- GeoTIFF.js -->
-  <script src="https://cdn.jsdelivr.net/npm/geotiff@2.1.3/dist-browser/geotiff.js"></script>
-
-  <!-- georaster -->
+  <!-- georaster (bundles geotiff v1 internally) -->
   <script src="https://unpkg.com/georaster@1.6.0/dist/georaster.browser.bundle.min.js"></script>
 
-  <!-- georaster-layer-for-leaflet -->
+  <!-- georaster-layer-for-leaflet (bundles its own geotiff v2) -->
   <script src="https://unpkg.com/georaster-layer-for-leaflet@4.1.2/dist/v3/webpack/bundle/georaster-layer-for-leaflet.min.js"></script>
 
   <style>
@@ -234,22 +231,23 @@ let currentGeoRaster = null;
 let bandCount = 1;
 let bandStats = []; // [{min, max}, …] one per band
 
-async function computeBandStats(url, georaster) {
+async function computeBandStats(georaster) {
   const n = georaster.numberOfRasters;
   const fallback = Array.from({ length: n }, () => ({ min: 0, max: 255 }));
 
-  // 1. Use embedded stats if all bands have them and they're non-trivial
-  if (georaster.mins && georaster.maxs &&
-      georaster.mins.length === n && georaster.maxs.length === n &&
-      georaster.mins.every((v, i) => v !== undefined && georaster.maxs[i] !== undefined && v !== georaster.maxs[i])) {
+  // 1. Use embedded stats if present and non-trivial for all bands
+  if (Array.isArray(georaster.mins) && Array.isArray(georaster.maxs) &&
+      georaster.mins.length >= n && georaster.maxs.length >= n &&
+      georaster.mins.every((v, i) => v != null && georaster.maxs[i] != null && v !== georaster.maxs[i])) {
     return georaster.mins.map((min, i) => ({ min, max: georaster.maxs[i] }));
   }
 
-  // 2. Read the smallest overview image from the TIFF to estimate stats
+  // 2. Read smallest overview via the internal geotiff object georaster exposes
   try {
-    const tiff = await GeoTIFF.fromUrl(url);
+    const tiff = georaster._geotiff || georaster.geotiff;
+    if (!tiff) throw new Error('no internal geotiff');
     const imageCount = await tiff.getImageCount();
-    const overview = await tiff.getImage(imageCount - 1); // smallest overview
+    const overview = await tiff.getImage(imageCount - 1);
     const rasters = await overview.readRasters();
     const nd = georaster.noDataValue;
     return Array.from({ length: n }, (_, i) => {
@@ -257,15 +255,14 @@ async function computeBandStats(url, georaster) {
       if (!band) return fallback[i];
       let min = Infinity, max = -Infinity;
       for (const v of band) {
-        if (v === nd || v === null || v === undefined || isNaN(v)) continue;
+        if (v === nd || v == null || isNaN(v)) continue;
         if (v < min) min = v;
         if (v > max) max = v;
       }
-      if (!isFinite(min)) return fallback[i];
-      return { min, max };
+      return isFinite(min) ? { min, max } : fallback[i];
     });
   } catch (e) {
-    console.warn('Could not compute band stats from overview:', e);
+    console.warn('Could not compute band stats:', e);
     return fallback;
   }
 }
@@ -341,7 +338,7 @@ async function loadCOG(url) {
     const georaster = await parseGeoraster(url);
     currentGeoRaster = georaster;
     bandCount = georaster.numberOfRasters;
-    bandStats = await computeBandStats(url, georaster);
+    bandStats = await computeBandStats(georaster);
 
     /* Populate band selector */
     bandSelect.innerHTML = '';
@@ -383,7 +380,8 @@ async function loadCOG(url) {
     });
 
   } catch (err) {
-    setStatus('Error: ' + err.message, 'error');
+    const msg = err?.message || (typeof err === 'string' ? err : JSON.stringify(err));
+    setStatus('Error: ' + msg, 'error');
     console.error(err);
   } finally {
     loadBtn.disabled = false;
