@@ -152,6 +152,16 @@
     #map-wrap { flex: 1; position: relative; }
     #map { width: 100%; height: 100%; }
 
+    /* ── RGB composite table ── */
+    .rgb-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .rgb-table td { padding: 2px 3px; vertical-align: middle; }
+    .rgb-ch { font-weight: 800; width: 14px; }
+    .rgb-table select {
+      background: #0f3460; color: #e0e0e0;
+      border: 1px solid #1a4a80; border-radius: 3px;
+      padding: 2px 4px; font-size: 0.72rem; width: 100%;
+    }
+
     /* ── Info box ── */
     #info-box {
       position: absolute; bottom: 28px; right: 8px;
@@ -264,8 +274,60 @@
         <select id="calc-cmap" style="background:#0f3460;color:#e0e0e0;border:1px solid #1a4a80;border-radius:3px;padding:1px 4px;font-size:0.72rem;"></select>
         <canvas id="calc-cmap-preview" class="cmap-preview" width="64" height="13"></canvas>
       </div>
+      <div class="calc-hint" style="color:#555;margin-bottom:4px;">
+        ↳ operates on full data extent (not just viewport)
+      </div>
       <button id="calc-btn" class="btn-accent" style="width:100%">Calculate</button>
       <div id="calc-status"></div>
+    </div>
+
+    <!-- RGB Composite -->
+    <div class="sb-section">
+      <h3>RGB Composite → R</h3>
+      <table class="rgb-table">
+        <thead><tr>
+          <th></th>
+          <th style="color:#888;font-weight:400;font-size:0.68rem;text-align:left">Slot</th>
+          <th style="color:#888;font-weight:400;font-size:0.68rem;text-align:left">Band</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td class="rgb-ch" style="color:#e94560">R</td>
+            <td><select id="comp-r-slot">
+              <option value="-">—</option>
+              <option value="A" selected>A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+            </select></td>
+            <td><select id="comp-r-band"><option value="0">b1</option></select></td>
+          </tr>
+          <tr>
+            <td class="rgb-ch" style="color:#33cc77">G</td>
+            <td><select id="comp-g-slot">
+              <option value="-">—</option>
+              <option value="A">A</option>
+              <option value="B" selected>B</option>
+              <option value="C">C</option>
+            </select></td>
+            <td><select id="comp-g-band"><option value="0">b1</option></select></td>
+          </tr>
+          <tr>
+            <td class="rgb-ch" style="color:#0099dd">B</td>
+            <td><select id="comp-b-slot">
+              <option value="-">—</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C" selected>C</option>
+            </select></td>
+            <td><select id="comp-b-band"><option value="0">b1</option></select></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="font-size:0.68rem;color:#555;margin:5px 0 6px;">
+        Full extent, 300×300 max. Each channel min–max stretched independently.
+      </div>
+      <button id="comp-btn" class="btn-accent" style="width:100%">Composite</button>
+      <div id="comp-status" style="font-size:0.7rem;color:#aaa;margin-top:5px;min-height:1em;"></div>
     </div>
 
     <!-- Basemaps -->
@@ -472,19 +534,19 @@ function filename(url) {
 }
 
 /* Build a GeoRasterLayer from slot config */
-function buildLeafletLayer(gr, bandStats, { band = 0, colormap = 'viridis', opacity = 1 } = {}) {
+function buildLeafletLayer(gr, bandStats, { band = 0, colormap = 'viridis', opacity = 1, rgb = false } = {}) {
   const nd = gr.noDataValue;
   const isND = v => v == null || (nd != null && v === nd) || isNaN(v) || !isFinite(v);
   const stretch = (v, mn, mx) => mx > mn ? Math.max(0, Math.min(1, (v - mn) / (mx - mn))) : 0.5;
   const n = gr.numberOfRasters;
-  const isRGB = n >= 3 && band === -1 && colormap === 'grayscale';
+  const useRGB = rgb || (n >= 3 && band === -1 && colormap === 'grayscale');
 
   return new GeoRasterLayer({
     georaster: gr,
     opacity,
     resolution: 128,
     pixelValuesToColorFn: values => {
-      if (isRGB) {
+      if (useRGB) {
         if (isND(values[0])) return null;
         const r = Math.round(stretch(values[0], bandStats[0]?.min??0, bandStats[0]?.max??255) * 255);
         const g = Math.round(stretch(values[1], bandStats[1]?.min??0, bandStats[1]?.max??255) * 255);
@@ -541,7 +603,7 @@ function clearSlot(key) {
 
 function rerenderSlot(key) {
   const s = slots[key];
-  if (!s) return;
+  if (!s || s.isComposite) return;
   if (s.leafletLayer) map.removeLayer(s.leafletLayer);
   s.leafletLayer = buildLeafletLayer(s.gr, s.bandStats, { band: s.band, colormap: s.colormap, opacity: s.opacity });
   if (s.visible) s.leafletLayer.addTo(map);
@@ -551,8 +613,25 @@ function buildLayerSettings(key) {
   const s = slots[key];
   if (!s) return;
   const container = document.getElementById('settings-' + key);
-  const n = s.gr.numberOfRasters;
 
+  // Composite result: only opacity control
+  if (s.isComposite) {
+    container.innerHTML = `
+      <label style="font-size:0.72rem;color:#888;">RGB composite — opacity
+        <input id="op-${key}" type="range" min="0" max="100" value="${Math.round(s.opacity*100)}" style="width:65px">
+        <span id="oplbl-${key}">${Math.round(s.opacity*100)}%</span>
+      </label>`;
+    const opSl  = document.getElementById('op-'    + key);
+    const opLbl = document.getElementById('oplbl-' + key);
+    opSl.addEventListener('input', () => {
+      opLbl.textContent = opSl.value + '%';
+      s.opacity = parseInt(opSl.value) / 100;
+      s.leafletLayer?.setOpacity(s.opacity);
+    });
+    return;
+  }
+
+  const n = s.gr.numberOfRasters;
   const bandOpts = (n >= 3 ? `<option value="-1">RGB (1-2-3)</option>` : '') +
     Array.from({ length: n }, (_, i) => `<option value="${i}">Band ${i + 1}</option>`).join('');
 
@@ -706,6 +785,95 @@ async function runCalculator() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   RGB COMPOSITE
+═══════════════════════════════════════════════════════════════════════ */
+function updateRgbBandSel(channel) {
+  const slotKey = document.getElementById(`comp-${channel}-slot`).value;
+  const sel     = document.getElementById(`comp-${channel}-band`);
+  const n = (slotKey !== '-' && slots[slotKey]) ? slots[slotKey].gr.numberOfRasters : 1;
+  const prev = parseInt(sel.value) || 0;
+  sel.innerHTML = Array.from({ length: n }, (_, i) => `<option value="${i}">b${i+1}</option>`).join('');
+  sel.value = Math.min(prev, n - 1);
+}
+
+async function runComposite() {
+  const compStatus = document.getElementById('comp-status');
+  const compBtn    = document.getElementById('comp-btn');
+
+  const cfg = ['r', 'g', 'b'].map(ch => ({
+    slot: document.getElementById(`comp-${ch}-slot`).value,
+    band: parseInt(document.getElementById(`comp-${ch}-band`).value),
+  }));
+
+  const activeChans = cfg.filter(c => c.slot !== '-' && slots[c.slot]);
+  if (!activeChans.length) { compStatus.textContent = 'Assign at least one channel.'; return; }
+
+  compStatus.textContent = 'Building composite…';
+  compBtn.disabled = true;
+
+  // Reference extent from first active channel
+  const refSlot = activeChans[0].slot;
+  const refBounds = slots[refSlot].leafletLayer.getBounds();
+  const latMin = refBounds.getSouth(), latMax = refBounds.getNorth();
+  const lngMin = refBounds.getWest(),  lngMax = refBounds.getEast();
+
+  const refGr = slots[refSlot].gr;
+  const MAX_PX = 300 * 300;
+  const scale  = Math.min(1, Math.sqrt(MAX_PX / (refGr.width * refGr.height)));
+  const outW   = Math.max(2, Math.round(refGr.width  * scale));
+  const outH   = Math.max(2, Math.round(refGr.height * scale));
+  const dLng   = (lngMax - lngMin) / outW;
+  const dLat   = (latMax - latMin) / outH;
+  const ND     = -9999;
+
+  const bands = [[], [], []]; // R, G, B arrays
+  const stats = cfg.map(c =>
+    (c.slot !== '-' && slots[c.slot]) ? slots[c.slot].bandStats[c.band] ?? { min: 0, max: 255 } : null
+  );
+
+  for (let r = 0; r < outH; r++) {
+    const rows = [[], [], []];
+    const lat = latMax - (r + 0.5) * dLat;
+    for (let c = 0; c < outW; c++) {
+      const ll = L.latLng(lat, lngMin + (c + 0.5) * dLng);
+      cfg.forEach(({ slot, band }, i) => {
+        if (slot === '-' || !slots[slot]) { rows[i].push(ND); return; }
+        const v = getValuesAtLatLng(slots[slot].gr, ll)?.[band];
+        rows[i].push(v ?? ND);
+      });
+    }
+    rows.forEach((row, i) => bands[i].push(row));
+    if (r % 20 === 0) await new Promise(res => setTimeout(res, 0));
+  }
+
+  const synGr = await parseGeoraster(bands, {
+    noDataValue: ND, projection: 4326,
+    xmin: lngMin, ymin: latMin, xmax: lngMax, ymax: latMax,
+    pixelWidth: dLng, pixelHeight: dLat,
+  });
+
+  if (slots.R?.leafletLayer) map.removeLayer(slots.R.leafletLayer);
+
+  const resultLayer = buildLeafletLayer(synGr, stats.map(s => s ?? { min: 0, max: 255 }),
+    { band: 0, colormap: 'grayscale', opacity: 0.9, rgb: true });
+  resultLayer.addTo(map);
+
+  const label = cfg.map((c, i) =>
+    c.slot !== '-' ? `${'RGB'[i]}=${c.slot}b${c.band+1}` : ''
+  ).filter(Boolean).join(' ');
+
+  slots.R = { gr: synGr, leafletLayer: resultLayer,
+              bandStats: stats.map(s => s ?? { min: 0, max: 255 }),
+              visible: true, opacity: 0.9, url: 'composite', isComposite: true };
+  document.getElementById('row-R').style.display = '';
+  document.getElementById('name-R').textContent = label.length > 22 ? label.slice(0, 22) + '…' : label;
+  buildLayerSettings('R');
+
+  compStatus.textContent = 'Done — ' + label;
+  compBtn.disabled = false;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    UI WIRING
 ═══════════════════════════════════════════════════════════════════════ */
 const statusEl = document.getElementById('status');
@@ -749,6 +917,12 @@ populateCmapSelect(
 document.getElementById('calc-btn').addEventListener('click', runCalculator);
 document.getElementById('calc-formula').addEventListener('keydown', e => {
   if (e.key === 'Enter') runCalculator();
+});
+
+// RGB composite
+document.getElementById('comp-btn').addEventListener('click', runComposite);
+['r', 'g', 'b'].forEach(ch => {
+  document.getElementById(`comp-${ch}-slot`).addEventListener('change', () => updateRgbBandSel(ch));
 });
 
 // Basemap radio
