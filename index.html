@@ -141,6 +141,41 @@
     #map-wrap { flex: 1; position: relative; }
     #map { width: 100%; height: 100%; }
 
+    /* ── Dev console ── */
+    #console-panel {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: rgba(10,10,20,0.96); border-top: 1px solid #0f3460;
+      font-family: monospace; font-size: 0.7rem; z-index: 950;
+      display: flex; flex-direction: column; max-height: 38px;
+      transition: max-height 0.15s ease;
+    }
+    #console-panel.open { max-height: 220px; }
+    #console-header {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 8px; cursor: pointer; user-select: none;
+      flex-shrink: 0; border-bottom: 1px solid transparent;
+    }
+    #console-panel.open #console-header { border-bottom-color: #0f3460; }
+    #console-title { font-weight: 700; color: #e94560; font-size: 0.68rem; }
+    #console-count {
+      background: #e94560; color: #fff; border-radius: 8px;
+      padding: 0 5px; font-size: 0.6rem; display: none;
+    }
+    #console-count.has-errors { display: inline; }
+    .con-btn {
+      margin-left: auto; background: #1a2a4a; border: 1px solid #0f3460;
+      color: #aaa; padding: 1px 7px; border-radius: 3px;
+      font-size: 0.65rem; cursor: pointer;
+    }
+    .con-btn:hover { background: #0f3460; color: #e0e0e0; }
+    #console-toggle { margin-left: 0; min-width: 18px; text-align: center; }
+    #console-body { overflow-y: auto; flex: 1; padding: 4px 8px; }
+    .con-entry { padding: 1px 0; border-bottom: 1px solid #0f2030; white-space: pre-wrap; word-break: break-all; }
+    .con-entry.log   { color: #ccc; }
+    .con-entry.warn  { color: #f0c060; }
+    .con-entry.error { color: #e94560; }
+    .con-time { color: #444; margin-right: 4px; }
+
     /* ── Info box ── */
     #info-box {
       position: absolute; bottom: 28px; right: 8px;
@@ -259,11 +294,105 @@
   <div id="map-wrap">
     <div id="map"></div>
     <div id="info-box" style="display:none"></div>
+
+    <!-- Dev console -->
+    <div id="console-panel">
+      <div id="console-header">
+        <span id="console-title">Console</span>
+        <span id="console-count"></span>
+        <button class="con-btn" id="console-copy" onclick="event.stopPropagation()">Copy</button>
+        <button class="con-btn" id="console-clear" onclick="event.stopPropagation()">Clear</button>
+        <button class="con-btn" id="console-toggle">▶</button>
+      </div>
+      <div id="console-body">
+        <div id="console-entries"></div>
+      </div>
+    </div>
   </div>
 
 </div>
 
 <script>
+/* ═══════════════════════════════════════════════════════════════════════
+   DEV CONSOLE PANEL
+═══════════════════════════════════════════════════════════════════════ */
+(function () {
+  const panel    = document.getElementById('console-panel');
+  const entries  = document.getElementById('console-entries');
+  const countEl  = document.getElementById('console-count');
+  const toggleEl = document.getElementById('console-toggle');
+  let errorCount = 0;
+  let logLines   = [];
+
+  function addEntry(type, args) {
+    const text = args.map(a => {
+      if (a instanceof Error) return a.stack || a.message;
+      if (typeof a === 'object') { try { return JSON.stringify(a, null, 2); } catch { return String(a); } }
+      return String(a);
+    }).join(' ');
+
+    const t = new Date().toTimeString().slice(0, 8);
+    logLines.push(`[${t}] [${type.toUpperCase()}] ${text}`);
+
+    const el = document.createElement('div');
+    el.className = 'con-entry ' + type;
+    el.innerHTML = `<span class="con-time">${t}</span>${escHtml(text)}`;
+    entries.appendChild(el);
+    // Auto-scroll if open
+    const body = document.getElementById('console-body');
+    body.scrollTop = body.scrollHeight;
+
+    if (type === 'error') {
+      errorCount++;
+      countEl.textContent = errorCount;
+      countEl.classList.add('has-errors');
+    }
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Intercept console methods
+  ['log', 'warn', 'error'].forEach(method => {
+    const orig = console[method].bind(console);
+    console[method] = (...args) => { orig(...args); addEntry(method, args); };
+  });
+
+  // Also catch unhandled errors
+  window.addEventListener('error', e => {
+    addEntry('error', [e.error || e.message]);
+  });
+  window.addEventListener('unhandledrejection', e => {
+    addEntry('error', ['Unhandled promise rejection:', e.reason]);
+  });
+
+  // Toggle open/closed
+  document.getElementById('console-header').addEventListener('click', () => {
+    panel.classList.toggle('open');
+    toggleEl.textContent = panel.classList.contains('open') ? '▼' : '▶';
+  });
+
+  // Copy all lines
+  document.getElementById('console-copy').addEventListener('click', () => {
+    navigator.clipboard.writeText(logLines.join('\n')).then(() => {
+      const btn = document.getElementById('console-copy');
+      const prev = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = prev; }, 1200);
+    });
+  });
+
+  // Clear
+  document.getElementById('console-clear').addEventListener('click', () => {
+    entries.innerHTML = '';
+    logLines = [];
+    errorCount = 0;
+    countEl.textContent = '';
+    countEl.classList.remove('has-errors');
+  });
+})();
+
 /* ═══════════════════════════════════════════════════════════════════════
    CONSTANTS
 ═══════════════════════════════════════════════════════════════════════ */
@@ -520,15 +649,16 @@ async function loadSlot(key, url) {
 
     const nd = gr.noDataValue;
 
-    // Sample pixel values — gr.values may be empty for pure COG metadata loads,
-    // so fall back to georaster's built-in min/max arrays.
-    const rawSamples = (gr.values || []).map(b => sampleBand(b, nd));
+    // Drive sample array length from numberOfRasters — gr.values is often []
+    // for URL-loaded COGs because pixel data isn't eagerly fetched.
+    const rawSamples = Array.from({ length: gr.numberOfRasters }, (_, i) =>
+      sampleBand(gr.values?.[i], nd)
+    );
 
     const bandStats = rawSamples.map((samp, i) => {
       if (samp.length > 0) {
         return computeStretchStats(samp, 'percentile', { pLo: 2, pHi: 98 }) ?? { min: 0, max: 1 };
       }
-      // Fallback: georaster often exposes per-band mins/maxs from TIFF metadata
       if (gr.mins?.[i] != null && gr.maxs?.[i] != null && gr.maxs[i] !== gr.mins[i]) {
         return { min: gr.mins[i], max: gr.maxs[i] };
       }
