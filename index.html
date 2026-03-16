@@ -16,57 +16,50 @@
 
     body {
       font-family: system-ui, sans-serif;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      background: #1a1a2e;
-      color: #e0e0e0;
+      display: flex; flex-direction: column;
+      height: 100vh; background: #1a1a2e; color: #e0e0e0;
     }
 
     /* ── Header ── */
     header {
-      padding: 7px 12px;
-      background: #16213e;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      border-bottom: 1px solid #0f3460;
-      z-index: 1000;
+      padding: 7px 12px; background: #16213e;
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      border-bottom: 1px solid #0f3460; z-index: 1000;
     }
     header h1 { font-size: 1rem; font-weight: 700; color: #e94560; white-space: nowrap; }
     #url-input {
-      flex: 1; min-width: 160px;
-      padding: 5px 8px; border-radius: 5px;
+      flex: 1; min-width: 160px; padding: 5px 8px; border-radius: 5px;
       border: 1px solid #0f3460; background: #0f3460; color: #e0e0e0; font-size: 0.83rem;
     }
     #url-input:focus { outline: none; border-color: #e94560; }
-    #status { font-size: 0.75rem; color: #aaa; flex-shrink: 0; max-width: 280px;
-              overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #slot-select {
+      background: #0f3460; color: #e0e0e0; border: 1px solid #1a4a80;
+      border-radius: 5px; padding: 5px 6px; font-size: 0.8rem;
+    }
+    #status { font-size: 0.75rem; color: #aaa; flex-shrink: 0;
+              max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     #status.error { color: #e94560; }
     #status.ok    { color: #4caf50; }
 
     /* ── Buttons ── */
     button {
       padding: 5px 11px; border-radius: 5px; border: none;
-      cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: background 0.15s;
+      cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: background .15s;
     }
-    .btn-primary   { background: #e94560; color: #fff; }
-    .btn-primary:hover   { background: #c73652; }
+    .btn-primary  { background: #e94560; color: #fff; }
+    .btn-primary:hover { background: #c73652; }
     .btn-primary:disabled { background: #555; cursor: not-allowed; }
     .btn-secondary { background: #0f3460; color: #e0e0e0; }
     .btn-secondary:hover { background: #1a4a80; }
-    .btn-accent    { background: #533483; color: #e0e0e0; }
-    .btn-accent:hover    { background: #6a44a5; }
     .btn-sm { padding: 3px 7px; font-size: 0.72rem; }
 
-    /* ── Body layout ── */
+    /* ── Layout ── */
     .body-wrap { flex: 1; display: flex; overflow: hidden; }
 
     /* ── Sidebar ── */
     #sidebar {
-      width: 252px; min-width: 252px;
-      background: #16213e; border-right: 1px solid #0f3460;
+      width: 252px; min-width: 252px; background: #16213e;
+      border-right: 1px solid #0f3460;
       display: flex; flex-direction: column; overflow-y: auto; z-index: 500;
     }
     .sb-section { border-bottom: 1px solid #0f3460; padding: 9px 11px; }
@@ -77,7 +70,6 @@
 
     /* ── Preset row ── */
     .preset-row { display: flex; gap: 5px; flex-wrap: wrap; }
-    .preset-btn { display: flex; align-items: center; gap: 4px; }
     .slot-badge {
       width: 15px; height: 15px; border-radius: 3px;
       display: inline-flex; align-items: center; justify-content: center;
@@ -86,7 +78,6 @@
     .badge-A { background: #e94560; }
     .badge-B { background: #0099dd; }
     .badge-C { background: #33cc77; color: #111; }
-    .badge-R { background: #ff9900; color: #111; }
 
     /* ── Layer rows ── */
     .layer-row {
@@ -103,19 +94,27 @@
       font-size: 0.85rem; padding: 2px 3px; color: #aaa; border-radius: 3px;
     }
     .icon-btn:hover { background: #0f3460; color: #e0e0e0; }
-    .icon-btn.dim { opacity: 0.35; }
+    .icon-btn.dim { opacity: 0.3; }
 
-    /* ── Layer settings panel ── */
+    /* ── Layer settings ── */
     .layer-settings {
       display: none; padding: 5px 0 5px 20px;
-      flex-direction: column; gap: 5px; font-size: 0.75rem;
+      flex-direction: column; gap: 6px; font-size: 0.74rem;
     }
     .layer-settings.open { display: flex; }
     .layer-settings label { color: #999; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-    .layer-settings select, .layer-settings input[type=range] {
+    .ls-select {
       background: #0f3460; color: #e0e0e0;
       border: 1px solid #1a4a80; border-radius: 3px; padding: 1px 4px; font-size: 0.72rem;
     }
+    .ls-range { width: 70px; }
+    .ls-num {
+      width: 50px; background: #0f3460; color: #e0e0e0;
+      border: 1px solid #1a4a80; border-radius: 3px; padding: 1px 4px;
+      font-size: 0.72rem; text-align: center;
+    }
+    .stretch-params { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; color: #888; }
+    .stretch-params span { font-size: 0.68rem; }
 
     /* ── Colormap preview ── */
     .cmap-row { display: flex; align-items: center; gap: 5px; }
@@ -124,17 +123,7 @@
       border: 1px solid #1a4a80; display: block;
     }
 
-    /* ── Raster calculator ── */
-    #calc-formula {
-      width: 100%; padding: 5px 7px; border-radius: 4px;
-      border: 1px solid #0f3460; background: #0f3460; color: #e0e0e0;
-      font-size: 0.83rem; font-family: monospace; margin-bottom: 5px;
-    }
-    #calc-formula:focus { outline: none; border-color: #533483; }
-    .calc-hint { font-size: 0.68rem; color: #777; line-height: 1.5; margin-bottom: 7px; }
-    #calc-status { font-size: 0.7rem; color: #aaa; margin-top: 5px; min-height: 1em; }
-
-    /* ── Basemap section ── */
+    /* ── Basemap ── */
     .bm-row { display: flex; align-items: center; gap: 7px; padding: 2px 0; font-size: 0.78rem; }
     .bm-row input[type=radio], .bm-row input[type=checkbox] { accent-color: #e94560; }
     .wms-sub { padding-left: 2px; margin-top: 5px; }
@@ -148,26 +137,16 @@
       background: #0f3460; border: 1px solid #1a4a80; border-radius: 3px; width: 75px;
     }
 
-    /* ── Map area ── */
+    /* ── Map ── */
     #map-wrap { flex: 1; position: relative; }
     #map { width: 100%; height: 100%; }
-
-    /* ── RGB composite table ── */
-    .rgb-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-    .rgb-table td { padding: 2px 3px; vertical-align: middle; }
-    .rgb-ch { font-weight: 800; width: 14px; }
-    .rgb-table select {
-      background: #0f3460; color: #e0e0e0;
-      border: 1px solid #1a4a80; border-radius: 3px;
-      padding: 2px 4px; font-size: 0.72rem; width: 100%;
-    }
 
     /* ── Info box ── */
     #info-box {
       position: absolute; bottom: 28px; right: 8px;
       background: rgba(22,33,62,0.94); border: 1px solid #0f3460;
       border-radius: 6px; padding: 7px 11px; font-size: 0.74rem;
-      z-index: 900; max-width: 210px; pointer-events: none;
+      z-index: 900; max-width: 220px; pointer-events: none;
     }
     #info-box table { border-collapse: collapse; }
     #info-box td { padding: 1px 6px 1px 0; }
@@ -179,8 +158,7 @@
 <header>
   <h1>COG Viewer</h1>
   <input id="url-input" type="text" placeholder="Cloud Optimized GeoTIFF URL…" />
-  <select id="slot-select" style="background:#0f3460;color:#e0e0e0;border:1px solid #1a4a80;
-    border-radius:5px;padding:5px 6px;font-size:0.8rem;">
+  <select id="slot-select">
     <option value="A">→ Slot A</option>
     <option value="B">→ Slot B</option>
     <option value="C">→ Slot C</option>
@@ -198,136 +176,52 @@
     <div class="sb-section">
       <h3>NSW Wetlands Presets</h3>
       <div class="preset-row">
-        <button class="btn-secondary btn-sm preset-btn"
-          data-slot="A"
-          data-url="https://nswetlands-mapping.s3.us-east-2.amazonaws.com/COG/GEI_cog.tif">
+        <button class="btn-secondary btn-sm" id="pre-A"
+          data-slot="A" data-url="https://nswetlands-mapping.s3.us-east-2.amazonaws.com/COG/GEI_cog.tif">
           <span class="slot-badge badge-A">A</span> GEI
         </button>
-        <button class="btn-secondary btn-sm preset-btn"
-          data-slot="B"
-          data-url="https://nswetlands-mapping.s3.us-east-2.amazonaws.com/COG/PDEP_cog.tif">
+        <button class="btn-secondary btn-sm" id="pre-B"
+          data-slot="B" data-url="https://nswetlands-mapping.s3.us-east-2.amazonaws.com/COG/PDEP_cog.tif">
           <span class="slot-badge badge-B">B</span> PDEP
         </button>
-        <button class="btn-secondary btn-sm preset-btn"
-          data-slot="C"
-          data-url="https://nswetlands-mapping.s3.us-east-2.amazonaws.com/COG/DTW_cog.tif">
+        <button class="btn-secondary btn-sm" id="pre-C"
+          data-slot="C" data-url="https://nswetlands-mapping.s3.us-east-2.amazonaws.com/COG/DTW_cog.tif">
           <span class="slot-badge badge-C">C</span> DTW
         </button>
+        <button class="btn-secondary btn-sm" id="pre-all" style="margin-left:auto">Load All</button>
       </div>
     </div>
 
-    <!-- Layers -->
+    <!-- Layers A / B / C -->
     <div class="sb-section">
       <h3>Layers</h3>
 
-      <!-- Slot A -->
       <div class="layer-row">
         <span class="slot-badge badge-A">A</span>
         <span class="layer-name" id="name-A">Empty</span>
-        <button class="icon-btn" id="vis-A" title="Toggle visibility">👁</button>
-        <button class="icon-btn btn-sm" id="expand-A" title="Settings">⚙</button>
-        <button class="icon-btn btn-sm" id="clear-A" title="Remove">✕</button>
+        <button class="icon-btn" id="vis-A"    title="Toggle visibility">👁</button>
+        <button class="icon-btn btn-sm" id="expand-A" title="Symbolization">⚙</button>
+        <button class="icon-btn btn-sm" id="clear-A"  title="Remove">✕</button>
       </div>
       <div class="layer-settings" id="settings-A"></div>
 
-      <!-- Slot B -->
       <div class="layer-row">
         <span class="slot-badge badge-B">B</span>
         <span class="layer-name" id="name-B">Empty</span>
-        <button class="icon-btn" id="vis-B" title="Toggle visibility">👁</button>
-        <button class="icon-btn btn-sm" id="expand-B" title="Settings">⚙</button>
-        <button class="icon-btn btn-sm" id="clear-B" title="Remove">✕</button>
+        <button class="icon-btn" id="vis-B"    title="Toggle visibility">👁</button>
+        <button class="icon-btn btn-sm" id="expand-B" title="Symbolization">⚙</button>
+        <button class="icon-btn btn-sm" id="clear-B"  title="Remove">✕</button>
       </div>
       <div class="layer-settings" id="settings-B"></div>
 
-      <!-- Slot C -->
       <div class="layer-row">
         <span class="slot-badge badge-C">C</span>
         <span class="layer-name" id="name-C">Empty</span>
-        <button class="icon-btn" id="vis-C" title="Toggle visibility">👁</button>
-        <button class="icon-btn btn-sm" id="expand-C" title="Settings">⚙</button>
-        <button class="icon-btn btn-sm" id="clear-C" title="Remove">✕</button>
+        <button class="icon-btn" id="vis-C"    title="Toggle visibility">👁</button>
+        <button class="icon-btn btn-sm" id="expand-C" title="Symbolization">⚙</button>
+        <button class="icon-btn btn-sm" id="clear-C"  title="Remove">✕</button>
       </div>
       <div class="layer-settings" id="settings-C"></div>
-
-      <!-- Slot R (calculator result) -->
-      <div class="layer-row" id="row-R" style="display:none">
-        <span class="slot-badge badge-R">R</span>
-        <span class="layer-name loaded" id="name-R">Result</span>
-        <button class="icon-btn" id="vis-R" title="Toggle visibility">👁</button>
-        <button class="icon-btn btn-sm" id="expand-R" title="Settings">⚙</button>
-        <button class="icon-btn btn-sm" id="clear-R" title="Remove">✕</button>
-      </div>
-      <div class="layer-settings" id="settings-R"></div>
-    </div>
-
-    <!-- Raster Calculator -->
-    <div class="sb-section">
-      <h3>Raster Calculator</h3>
-      <input id="calc-formula" type="text" placeholder="e.g.  A - B  or  A / (B + 1)" />
-      <div class="calc-hint">
-        A, B, C = band&nbsp;1 of each slot<br>
-        Supported: + − * / ** ( ) Math.log Math.sqrt Math.abs …
-      </div>
-      <div class="cmap-row" style="margin-bottom:7px;">
-        <label style="font-size:0.74rem;color:#888;">Colormap</label>
-        <select id="calc-cmap" style="background:#0f3460;color:#e0e0e0;border:1px solid #1a4a80;border-radius:3px;padding:1px 4px;font-size:0.72rem;"></select>
-        <canvas id="calc-cmap-preview" class="cmap-preview" width="64" height="13"></canvas>
-      </div>
-      <div class="calc-hint" style="color:#555;margin-bottom:4px;">
-        ↳ operates on full data extent (not just viewport)
-      </div>
-      <button id="calc-btn" class="btn-accent" style="width:100%">Calculate</button>
-      <div id="calc-status"></div>
-    </div>
-
-    <!-- RGB Composite -->
-    <div class="sb-section">
-      <h3>RGB Composite → R</h3>
-      <table class="rgb-table">
-        <thead><tr>
-          <th></th>
-          <th style="color:#888;font-weight:400;font-size:0.68rem;text-align:left">Slot</th>
-          <th style="color:#888;font-weight:400;font-size:0.68rem;text-align:left">Band</th>
-        </tr></thead>
-        <tbody>
-          <tr>
-            <td class="rgb-ch" style="color:#e94560">R</td>
-            <td><select id="comp-r-slot">
-              <option value="-">—</option>
-              <option value="A" selected>A</option>
-              <option value="B">B</option>
-              <option value="C">C</option>
-            </select></td>
-            <td><select id="comp-r-band"><option value="0">b1</option></select></td>
-          </tr>
-          <tr>
-            <td class="rgb-ch" style="color:#33cc77">G</td>
-            <td><select id="comp-g-slot">
-              <option value="-">—</option>
-              <option value="A">A</option>
-              <option value="B" selected>B</option>
-              <option value="C">C</option>
-            </select></td>
-            <td><select id="comp-g-band"><option value="0">b1</option></select></td>
-          </tr>
-          <tr>
-            <td class="rgb-ch" style="color:#0099dd">B</td>
-            <td><select id="comp-b-slot">
-              <option value="-">—</option>
-              <option value="A">A</option>
-              <option value="B">B</option>
-              <option value="C" selected>C</option>
-            </select></td>
-            <td><select id="comp-b-band"><option value="0">b1</option></select></td>
-          </tr>
-        </tbody>
-      </table>
-      <div style="font-size:0.68rem;color:#555;margin:5px 0 6px;">
-        Full extent, 300×300 max. Each channel min–max stretched independently.
-      </div>
-      <button id="comp-btn" class="btn-accent" style="width:100%">Composite</button>
-      <div id="comp-status" style="font-size:0.7rem;color:#aaa;margin-top:5px;min-height:1em;"></div>
     </div>
 
     <!-- Basemaps -->
@@ -367,11 +261,11 @@
     <div id="info-box" style="display:none"></div>
   </div>
 
-</div><!-- /body-wrap -->
+</div>
 
 <script>
 /* ═══════════════════════════════════════════════════════════════════════
-   COLORMAPS
+   CONSTANTS
 ═══════════════════════════════════════════════════════════════════════ */
 const COLORMAPS = {
   grayscale:  [[0,0,0],[255,255,255]],
@@ -392,18 +286,31 @@ const COLORMAPS = {
                [209,229,240],[146,197,222],[67,147,195],[33,102,172]],
   coolwarm:   [[59,76,192],[98,130,234],[141,176,254],[184,208,249],
                [220,217,193],[245,177,139],[235,120,83],[180,4,38]],
-  blues:      [[247,251,255],[222,235,247],[198,219,239],[158,202,225],
-               [107,174,214],[66,146,198],[33,113,181],[8,48,107]],
-  greens:     [[247,252,245],[229,245,224],[199,233,192],[161,217,155],
-               [116,196,118],[65,171,93],[35,139,69],[0,88,36]],
-  ylgnbu:     [[255,255,217],[237,248,177],[199,233,180],[127,205,187],
-               [65,182,196],[29,145,192],[34,94,168],[12,44,132]],
+  blues:      [[247,251,255],[198,219,239],[107,174,214],[33,113,181],[8,48,107]],
+  greens:     [[247,252,245],[199,233,192],[116,196,118],[35,139,69],[0,88,36]],
+  ylgnbu:     [[255,255,217],[199,233,180],[65,182,196],[34,94,168],[12,44,132]],
   terrain:    [[51,102,0],[102,153,51],[153,204,102],[204,255,153],
-               [153,153,51],[204,204,102],[255,255,204],[204,204,204],[255,255,255]],
+               [204,204,102],[255,255,204],[204,204,204],[255,255,255]],
   jet:        [[0,0,127],[0,0,255],[0,127,255],[0,255,255],
                [127,255,127],[255,255,0],[255,127,0],[255,0,0],[127,0,0]],
 };
 
+const BLEND_MODES = [
+  'normal','multiply','screen','overlay','darken','lighten',
+  'color-dodge','color-burn','hard-light','soft-light',
+  'difference','exclusion',
+];
+
+const STRETCH_MODES = [
+  { value: 'percentile', label: 'Percentile clip' },
+  { value: 'minmax',     label: 'Min–Max' },
+  { value: 'stddev',     label: 'Std Dev' },
+  { value: 'manual',     label: 'Manual' },
+];
+
+/* ═══════════════════════════════════════════════════════════════════════
+   COLORMAP UTILS
+═══════════════════════════════════════════════════════════════════════ */
 function sampleCmap(name, t) {
   const stops = COLORMAPS[name] || COLORMAPS.viridis;
   t = Math.max(0, Math.min(1, t));
@@ -414,34 +321,31 @@ function sampleCmap(name, t) {
   return [
     Math.round(lo[0] + f * (hi[0] - lo[0])),
     Math.round(lo[1] + f * (hi[1] - lo[1])),
-    Math.round(lo[2] + f * (hi[2] - lo[2]))
+    Math.round(lo[2] + f * (hi[2] - lo[2])),
   ];
 }
 
 function drawCmapPreview(canvas, name) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  const w = canvas.width, h = canvas.height;
-  for (let x = 0; x < w; x++) {
-    const [r, g, b] = sampleCmap(name, x / (w - 1));
+  for (let x = 0; x < canvas.width; x++) {
+    const [r, g, b] = sampleCmap(name, x / (canvas.width - 1));
     ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.fillRect(x, 0, 1, h);
+    ctx.fillRect(x, 0, 1, canvas.height);
   }
 }
 
-function populateCmapSelect(sel, previewCanvas, defaultName = 'viridis') {
-  sel.innerHTML = Object.keys(COLORMAPS).map(k =>
-    `<option value="${k}">${k[0].toUpperCase() + k.slice(1)}</option>`
-  ).join('');
-  sel.value = defaultName;
-  drawCmapPreview(previewCanvas, defaultName);
-  sel.addEventListener('change', () => drawCmapPreview(previewCanvas, sel.value));
-}
-
 /* ═══════════════════════════════════════════════════════════════════════
-   MAP SETUP
+   MAP + PANES
 ═══════════════════════════════════════════════════════════════════════ */
 const map = L.map('map', { center: [20, 0], zoom: 2 });
+
+// One pane per slot so blend mode can be set independently
+const SLOT_KEYS = ['A', 'B', 'C'];
+SLOT_KEYS.forEach((k, i) => {
+  map.createPane('pane-' + k);
+  map.getPane('pane-' + k).style.zIndex = String(401 + i);
+});
 
 const BASEMAP_TILES = {
   dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -455,15 +359,14 @@ BASEMAP_TILES.dark.addTo(map);
 let activeBm = 'dark';
 
 let wmsLayer = null;
-
 function syncWms() {
   if (wmsLayer) { map.removeLayer(wmsLayer); wmsLayer = null; }
   if (!document.getElementById('wms-on').checked) return;
-  const layerName = document.getElementById('wms-layer').value;
-  const opacity   = parseInt(document.getElementById('wms-opacity').value) / 100;
+  const opacity = parseInt(document.getElementById('wms-opacity').value) / 100;
   wmsLayer = L.tileLayer.wms('https://datacube.services.geo.ca/ows/elevation', {
-    layers: layerName, format: 'image/png', transparent: true,
-    version: '1.3.0', attribution: '© Natural Resources Canada', opacity
+    layers: document.getElementById('wms-layer').value,
+    format: 'image/png', transparent: true, version: '1.3.0',
+    attribution: '© Natural Resources Canada', opacity,
   });
   wmsLayer.addTo(map);
 }
@@ -482,102 +385,158 @@ async function ensureProjection(epsg) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   BAND STATS
+   STATISTICS + STRETCH
 ═══════════════════════════════════════════════════════════════════════ */
-function statsFromArrays(arrays, nd) {
-  return arrays.map(arr => {
-    if (!arr) return null;
-    let mn = Infinity, mx = -Infinity;
-    const step = Math.max(1, Math.floor(arr.length / 50000));
-    for (let i = 0; i < arr.length; i += step) {
-      const v = arr[i];
-      if (v == null || (nd != null && v === nd) || isNaN(v) || !isFinite(v)) continue;
-      if (v < mn) mn = v;
-      if (v > mx) mx = v;
+
+// Extract a flat sample of valid values from a band.
+// gr.values[band] is either a 2-D array (rows × cols) or a flat TypedArray.
+function sampleBand(bandData, nd, maxSamples = 50000) {
+  const valid = [];
+  const is2D = Array.isArray(bandData) && (Array.isArray(bandData[0]) || ArrayBuffer.isView(bandData[0]));
+  if (is2D) {
+    const nRows = bandData.length;
+    const nCols = bandData[0]?.length ?? 1;
+    const total = nRows * nCols;
+    const step  = Math.max(1, Math.floor(total / maxSamples));
+    let idx = 0;
+    for (const row of bandData) {
+      for (const v of row) {
+        if (idx++ % step === 0 && v !== nd && !isNaN(v) && isFinite(v)) valid.push(v);
+      }
     }
-    return (isFinite(mn) && mn !== mx) ? { min: mn, max: mx } : null;
-  });
+  } else {
+    const step = Math.max(1, Math.floor(bandData.length / maxSamples));
+    for (let i = 0; i < bandData.length; i += step) {
+      const v = bandData[i];
+      if (v !== nd && !isNaN(v) && isFinite(v)) valid.push(v);
+    }
+  }
+  return valid;
 }
 
-async function computeBandStats(gr) {
-  const n = gr.numberOfRasters, nd = gr.noDataValue, def = { min: 0, max: 255 };
-  if (Array.isArray(gr.mins) && gr.mins.length >= n) {
-    const s = Array.from({ length: n }, (_, i) => {
-      const mn = gr.mins[i], mx = gr.maxs?.[i];
-      return (mn != null && mx != null && mn !== mx) ? { min: mn, max: mx } : null;
-    });
-    if (s.every(Boolean)) return s;
-  }
-  if (Array.isArray(gr.values) && gr.values.length >= n) {
-    const s = statsFromArrays(gr.values, nd);
-    return s.map(x => x ?? def);
-  }
-  try {
-    const tiff = gr._geotiff || gr.geotiff || gr._tiff;
-    if (!tiff) throw new Error('no tiff');
-    const img  = await tiff.getImage((await tiff.getImageCount()) - 1);
-    const rasters = await img.readRasters();
-    return statsFromArrays(Array.from({ length: n }, (_, i) => rasters[i]), nd).map(x => x ?? def);
-  } catch {
-    return Array.from({ length: n }, () => def);
+function computeStretchStats(samples, mode, params) {
+  if (!samples || !samples.length) return { min: 0, max: 1 };
+  switch (mode) {
+    case 'minmax': {
+      let mn = Infinity, mx = -Infinity;
+      for (const v of samples) { if (v < mn) mn = v; if (v > mx) mx = v; }
+      return { min: mn, max: mx };
+    }
+    case 'percentile': {
+      const sorted = Float64Array.from(samples).sort();
+      const lo = Math.max(0, Math.min(49, params.pLo ?? 2));
+      const hi = Math.min(100, Math.max(51, params.pHi ?? 98));
+      return {
+        min: sorted[Math.round(sorted.length * lo / 100)],
+        max: sorted[Math.round(sorted.length * hi / 100) - 1] ?? sorted[sorted.length - 1],
+      };
+    }
+    case 'stddev': {
+      const n    = samples.length;
+      const mean = samples.reduce((s, v) => s + v, 0) / n;
+      const std  = Math.sqrt(samples.reduce((s, v) => s + (v - mean) ** 2, 0) / n);
+      const ns   = params.nSigma ?? 2;
+      return { min: mean - ns * std, max: mean + ns * std };
+    }
+    case 'manual':
+      return { min: params.manMin ?? 0, max: params.manMax ?? 1 };
+    default:
+      return { min: 0, max: 1 };
   }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   LAYER STATE  —  slots: A | B | C | R
+   SLOT STATE
 ═══════════════════════════════════════════════════════════════════════ */
-const slots = { A: null, B: null, C: null, R: null };
+const slots = { A: null, B: null, C: null };
+
+/*
+  slot state shape:
+  { gr, leafletLayer, rawSamples[],  // flat samples per band
+    bandStats[],                      // current {min,max} per band
+    visible, band, colormap, opacity,
+    stretchMode, pLo, pHi, nSigma, manMin, manMax,
+    blendMode, url }
+*/
 
 function filename(url) {
   try { return new URL(url).pathname.split('/').pop().replace(/_cog\.tif$/i, '') || url; }
   catch { return url; }
 }
 
-/* Build a GeoRasterLayer from slot config */
-function buildLeafletLayer(gr, bandStats, { band = 0, colormap = 'viridis', opacity = 1, rgb = false } = {}) {
+function applyBlend(key, mode) {
+  const pane = map.getPane('pane-' + key);
+  if (pane) pane.style.mixBlendMode = mode;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RENDERING
+═══════════════════════════════════════════════════════════════════════ */
+function buildLeafletLayer(gr, bandStats, { band = 0, colormap = 'viridis', opacity = 1, pane = 'overlayPane' } = {}) {
   const nd = gr.noDataValue;
   const isND = v => v == null || (nd != null && v === nd) || isNaN(v) || !isFinite(v);
-  const stretch = (v, mn, mx) => mx > mn ? Math.max(0, Math.min(1, (v - mn) / (mx - mn))) : 0.5;
-  const n = gr.numberOfRasters;
-  const useRGB = rgb || (n >= 3 && band === -1 && colormap === 'grayscale');
+  const { min, max } = bandStats[band] ?? { min: 0, max: 1 };
+  const range = max - min || 1;
 
   return new GeoRasterLayer({
-    georaster: gr,
-    opacity,
-    resolution: 128,
+    georaster: gr, opacity, resolution: 128, pane,
     pixelValuesToColorFn: values => {
-      if (useRGB) {
-        if (isND(values[0])) return null;
-        const r = Math.round(stretch(values[0], bandStats[0]?.min??0, bandStats[0]?.max??255) * 255);
-        const g = Math.round(stretch(values[1], bandStats[1]?.min??0, bandStats[1]?.max??255) * 255);
-        const b = Math.round(stretch(values[2], bandStats[2]?.min??0, bandStats[2]?.max??255) * 255);
-        return `rgb(${r},${g},${b})`;
-      }
-      const bi = band === -1 ? 0 : band;
-      const v  = values[bi];
+      const v = values[band];
       if (isND(v)) return null;
-      const { min, max } = bandStats[bi] ?? { min: 0, max: 255 };
-      const [r, g, b] = sampleCmap(colormap, stretch(v, min, max));
+      const [r, g, b] = sampleCmap(colormap, Math.max(0, Math.min(1, (v - min) / range)));
       return `rgb(${r},${g},${b})`;
-    }
+    },
   });
 }
 
+function rerenderSlot(key) {
+  const s = slots[key];
+  if (!s) return;
+
+  // Recompute stretch stats from stored samples
+  const stretchParams = { pLo: s.pLo, pHi: s.pHi, nSigma: s.nSigma, manMin: s.manMin, manMax: s.manMax };
+  s.bandStats = s.rawSamples.map(samp => computeStretchStats(samp, s.stretchMode, stretchParams));
+
+  if (s.leafletLayer) map.removeLayer(s.leafletLayer);
+  s.leafletLayer = buildLeafletLayer(s.gr, s.bandStats,
+    { band: s.band, colormap: s.colormap, opacity: s.opacity, pane: 'pane-' + key });
+  if (s.visible) s.leafletLayer.addTo(map);
+  applyBlend(key, s.blendMode);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   LOAD / CLEAR
+═══════════════════════════════════════════════════════════════════════ */
 async function loadSlot(key, url) {
   setStatus(`Loading ${key}…`);
   document.getElementById('load-btn').disabled = true;
   try {
     if (slots[key]?.leafletLayer) map.removeLayer(slots[key].leafletLayer);
+
     const gr = await parseGeoraster(url);
     await ensureProjection(gr.projection);
-    const bandStats = await computeBandStats(gr);
-    const lyr = buildLeafletLayer(gr, bandStats, { colormap: 'viridis', band: 0, opacity: 1 });
+
+    // Sample raw values for stats
+    const nd = gr.noDataValue;
+    const rawSamples = (gr.values || []).map(band => sampleBand(band, nd));
+
+    // Default: percentile 2–98
+    const bandStats = rawSamples.map(samp =>
+      computeStretchStats(samp, 'percentile', { pLo: 2, pHi: 98 }));
+
+    const lyr = buildLeafletLayer(gr, bandStats,
+      { band: 0, colormap: 'viridis', opacity: 1, pane: 'pane-' + key });
     lyr.addTo(map);
     map.fitBounds(lyr.getBounds());
-    slots[key] = { gr, leafletLayer: lyr, bandStats, visible: true, colormap: 'viridis', band: 0, opacity: 1, url };
-    const nameEl = document.getElementById('name-' + key);
-    nameEl.textContent = filename(url);
-    nameEl.classList.add('loaded');
+
+    slots[key] = {
+      gr, leafletLayer: lyr, rawSamples, bandStats,
+      visible: true, band: 0, colormap: 'viridis', opacity: 1,
+      stretchMode: 'percentile', pLo: 2, pHi: 98, nSigma: 2, manMin: null, manMax: null,
+      blendMode: 'normal', url,
+    };
+    document.getElementById('name-' + key).textContent = filename(url);
+    document.getElementById('name-' + key).classList.add('loaded');
     buildLayerSettings(key);
     setStatus(`${key}: ${filename(url)} — ${gr.numberOfRasters}b ${gr.width}×${gr.height} EPSG:${gr.projection||'?'}`, 'ok');
   } catch (err) {
@@ -592,89 +551,144 @@ function clearSlot(key) {
   if (!slots[key]) return;
   if (slots[key].leafletLayer) map.removeLayer(slots[key].leafletLayer);
   slots[key] = null;
-  const nameEl = document.getElementById('name-' + key);
-  nameEl.textContent = 'Empty';
-  nameEl.classList.remove('loaded');
-  document.getElementById('settings-' + key).innerHTML = '';
-  document.getElementById('settings-' + key).classList.remove('open');
-  if (key === 'R') document.getElementById('row-R').style.display = 'none';
+  document.getElementById('name-' + key).textContent = 'Empty';
+  document.getElementById('name-' + key).classList.remove('loaded');
+  const se = document.getElementById('settings-' + key);
+  se.innerHTML = ''; se.classList.remove('open');
   document.getElementById('vis-' + key).classList.remove('dim');
 }
 
-function rerenderSlot(key) {
-  const s = slots[key];
-  if (!s || s.isComposite) return;
-  if (s.leafletLayer) map.removeLayer(s.leafletLayer);
-  s.leafletLayer = buildLeafletLayer(s.gr, s.bandStats, { band: s.band, colormap: s.colormap, opacity: s.opacity });
-  if (s.visible) s.leafletLayer.addTo(map);
-}
-
+/* ═══════════════════════════════════════════════════════════════════════
+   LAYER SETTINGS PANEL
+═══════════════════════════════════════════════════════════════════════ */
 function buildLayerSettings(key) {
   const s = slots[key];
   if (!s) return;
+  const n = s.gr.numberOfRasters;
   const container = document.getElementById('settings-' + key);
 
-  // Composite result: only opacity control
-  if (s.isComposite) {
-    container.innerHTML = `
-      <label style="font-size:0.72rem;color:#888;">RGB composite — opacity
-        <input id="op-${key}" type="range" min="0" max="100" value="${Math.round(s.opacity*100)}" style="width:65px">
-        <span id="oplbl-${key}">${Math.round(s.opacity*100)}%</span>
-      </label>`;
-    const opSl  = document.getElementById('op-'    + key);
-    const opLbl = document.getElementById('oplbl-' + key);
-    opSl.addEventListener('input', () => {
-      opLbl.textContent = opSl.value + '%';
-      s.opacity = parseInt(opSl.value) / 100;
-      s.leafletLayer?.setOpacity(s.opacity);
-    });
-    return;
-  }
-
-  const n = s.gr.numberOfRasters;
-  const bandOpts = (n >= 3 ? `<option value="-1">RGB (1-2-3)</option>` : '') +
-    Array.from({ length: n }, (_, i) => `<option value="${i}">Band ${i + 1}</option>`).join('');
-
+  // Build option lists
+  const bandOpts = Array.from({ length: n }, (_, i) =>
+    `<option value="${i}"${i === s.band ? ' selected' : ''}>Band ${i + 1}</option>`).join('');
   const cmapOpts = Object.keys(COLORMAPS).map(k =>
-    `<option value="${k}">${k[0].toUpperCase() + k.slice(1)}</option>`
-  ).join('');
+    `<option value="${k}"${k === s.colormap ? ' selected' : ''}>${k[0].toUpperCase() + k.slice(1)}</option>`).join('');
+  const blendOpts = BLEND_MODES.map(m =>
+    `<option value="${m}"${m === s.blendMode ? ' selected' : ''}>${m[0].toUpperCase() + m.slice(1)}</option>`).join('');
+  const stretchOpts = STRETCH_MODES.map(({ value, label }) =>
+    `<option value="${value}"${value === s.stretchMode ? ' selected' : ''}>${label}</option>`).join('');
 
   container.innerHTML = `
-    <label>Band <select id="band-${key}">${bandOpts}</select></label>
+    ${n > 1 ? `<label>Band <select class="ls-select" id="band-${key}">${bandOpts}</select></label>` : ''}
+
     <label>Colormap</label>
     <div class="cmap-row">
-      <select id="cmap-${key}">${cmapOpts}</select>
-      <canvas id="cprev-${key}" class="cmap-preview" width="64" height="13"></canvas>
+      <select class="ls-select" id="cmap-${key}">${cmapOpts}</select>
+      <canvas id="cprev-${key}" class="cmap-preview" width="72" height="13"></canvas>
     </div>
+
+    <label>Stretch <select class="ls-select" id="stretch-${key}">${stretchOpts}</select></label>
+    <div class="stretch-params" id="sparam-${key}"></div>
+
+    <label>Blend <select class="ls-select" id="blend-${key}">${blendOpts}</select></label>
+
     <label>Opacity
-      <input id="op-${key}" type="range" min="0" max="100" value="${Math.round(s.opacity*100)}" style="width:65px">
-      <span id="oplbl-${key}">${Math.round(s.opacity*100)}%</span>
+      <input type="range" class="ls-range" id="op-${key}" min="0" max="100" value="${Math.round(s.opacity * 100)}">
+      <span id="oplbl-${key}">${Math.round(s.opacity * 100)}%</span>
     </label>`;
 
-  const bandSel = document.getElementById('band-' + key);
-  const cmapSel = document.getElementById('cmap-' + key);
-  const cprev   = document.getElementById('cprev-' + key);
-  const opSl    = document.getElementById('op-' + key);
-  const opLbl   = document.getElementById('oplbl-' + key);
+  drawCmapPreview(document.getElementById('cprev-' + key), s.colormap);
+  buildStretchParams(key);
 
-  cmapSel.value = s.colormap;
-  drawCmapPreview(cprev, s.colormap);
-
-  cmapSel.addEventListener('change', () => {
-    s.colormap = cmapSel.value;
-    drawCmapPreview(cprev, s.colormap);
+  // ── Events ──
+  if (n > 1) {
+    document.getElementById('band-' + key).addEventListener('change', e => {
+      s.band = parseInt(e.target.value); rerenderSlot(key);
+    });
+  }
+  document.getElementById('cmap-' + key).addEventListener('change', e => {
+    s.colormap = e.target.value;
+    drawCmapPreview(document.getElementById('cprev-' + key), s.colormap);
     rerenderSlot(key);
   });
-  bandSel.addEventListener('change', () => { s.band = parseInt(bandSel.value); rerenderSlot(key); });
+  document.getElementById('stretch-' + key).addEventListener('change', e => {
+    s.stretchMode = e.target.value;
+    buildStretchParams(key);
+    rerenderSlot(key);
+  });
+  document.getElementById('blend-' + key).addEventListener('change', e => {
+    s.blendMode = e.target.value;
+    applyBlend(key, s.blendMode);
+  });
+  const opSl  = document.getElementById('op-' + key);
+  const opLbl = document.getElementById('oplbl-' + key);
   opSl.addEventListener('input', () => {
-    opLbl.textContent = opSl.value + '%';
     s.opacity = parseInt(opSl.value) / 100;
+    opLbl.textContent = opSl.value + '%';
     s.leafletLayer?.setOpacity(s.opacity);
   });
 }
 
+function buildStretchParams(key) {
+  const s = slots[key];
+  if (!s) return;
+  const container = document.getElementById('sparam-' + key);
+  if (!container) return;
+
+  // Show the current data range as a hint
+  const bs = s.bandStats[s.band];
+  const hint = bs ? ` <span style="color:#555">[${bs.min.toFixed(2)}–${bs.max.toFixed(2)}]</span>` : '';
+
+  switch (s.stretchMode) {
+    case 'percentile':
+      container.innerHTML = `
+        <span>Lo</span>
+        <input type="number" class="ls-num" id="plo-${key}" min="0" max="49" step="1" value="${s.pLo}">
+        <span>Hi</span>
+        <input type="number" class="ls-num" id="phi-${key}" min="51" max="100" step="1" value="${s.pHi}">
+        <span>%${hint}</span>`;
+      document.getElementById('plo-' + key).addEventListener('change', e => {
+        s.pLo = parseFloat(e.target.value) || 2; rerenderSlot(key); buildStretchParams(key);
+      });
+      document.getElementById('phi-' + key).addEventListener('change', e => {
+        s.pHi = parseFloat(e.target.value) || 98; rerenderSlot(key); buildStretchParams(key);
+      });
+      break;
+
+    case 'minmax':
+      container.innerHTML = `<span style="color:#666">Full data range${hint}</span>`;
+      break;
+
+    case 'stddev':
+      container.innerHTML = `
+        <span>±</span>
+        <input type="number" class="ls-num" id="nsig-${key}" min="0.5" max="6" step="0.5" value="${s.nSigma}">
+        <span>σ${hint}</span>`;
+      document.getElementById('nsig-' + key).addEventListener('change', e => {
+        s.nSigma = parseFloat(e.target.value) || 2; rerenderSlot(key); buildStretchParams(key);
+      });
+      break;
+
+    case 'manual': {
+      const mn = s.manMin ?? (bs?.min ?? 0);
+      const mx = s.manMax ?? (bs?.max ?? 1);
+      container.innerHTML = `
+        <span>Min</span>
+        <input type="number" class="ls-num" id="mmin-${key}" value="${mn.toFixed(4)}" step="any">
+        <span>Max</span>
+        <input type="number" class="ls-num" id="mmax-${key}" value="${mx.toFixed(4)}" step="any">`;
+      document.getElementById('mmin-' + key).addEventListener('change', e => {
+        s.manMin = parseFloat(e.target.value); rerenderSlot(key); buildStretchParams(key);
+      });
+      document.getElementById('mmax-' + key).addEventListener('change', e => {
+        s.manMax = parseFloat(e.target.value); rerenderSlot(key); buildStretchParams(key);
+      });
+      break;
+    }
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
-   PIXEL LOOKUP  (handles projected CRS via proj4)
+   PIXEL HOVER
 ═══════════════════════════════════════════════════════════════════════ */
 function getValuesAtLatLng(gr, latlng) {
   let x = latlng.lng, y = latlng.lat;
@@ -694,186 +708,6 @@ function getValuesAtLatLng(gr, latlng) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   RASTER CALCULATOR
-═══════════════════════════════════════════════════════════════════════ */
-async function runCalculator() {
-  const formula    = document.getElementById('calc-formula').value.trim();
-  const cmapName   = document.getElementById('calc-cmap').value;
-  const calcStatus = document.getElementById('calc-status');
-  const calcBtn    = document.getElementById('calc-btn');
-
-  if (!formula) { calcStatus.textContent = 'Enter a formula.'; return; }
-
-  // Find a reference slot (for geographic extent)
-  const refKey = ['A', 'B', 'C'].find(k => slots[k]?.leafletLayer);
-  if (!refKey) { calcStatus.textContent = 'Load at least one layer.'; return; }
-
-  // Validate formula syntax
-  try { new Function('A', 'B', 'C', 'Math', `"use strict"; return (${formula});`)(1, 1, 1, Math); }
-  catch (e) { calcStatus.textContent = 'Syntax error: ' + e.message; return; }
-
-  calcStatus.textContent = 'Calculating…';
-  calcBtn.disabled = true;
-
-  // Use the reference layer's geographic bounds for the output grid
-  const refBounds = slots[refKey].leafletLayer.getBounds();
-  const latMin = refBounds.getSouth(), latMax = refBounds.getNorth();
-  const lngMin = refBounds.getWest(),  lngMax = refBounds.getEast();
-
-  // Cap output resolution for performance
-  const refGr = slots[refKey].gr;
-  const MAX_PX = 300 * 300;
-  const scale  = Math.min(1, Math.sqrt(MAX_PX / (refGr.width * refGr.height)));
-  const outW   = Math.max(2, Math.round(refGr.width  * scale));
-  const outH   = Math.max(2, Math.round(refGr.height * scale));
-  const dLng   = (lngMax - lngMin) / outW;
-  const dLat   = (latMax - latMin) / outH;
-  const ND     = -9999;
-
-  const evalFn = new Function('A', 'B', 'C', 'Math',
-    `try { const _r = (${formula}); return (isNaN(_r)||!isFinite(_r)) ? null : _r; } catch { return null; }`);
-
-  // Yield to UI after each row to keep the browser responsive
-  const band0 = [];
-  let minR = Infinity, maxR = -Infinity;
-
-  for (let r = 0; r < outH; r++) {
-    const lat = latMax - (r + 0.5) * dLat;
-    const row = [];
-    for (let c = 0; c < outW; c++) {
-      const ll = L.latLng(lat, lngMin + (c + 0.5) * dLng);
-      const vA = slots.A ? (getValuesAtLatLng(slots.A.gr, ll)?.[0] ?? null) : null;
-      const vB = slots.B ? (getValuesAtLatLng(slots.B.gr, ll)?.[0] ?? null) : null;
-      const vC = slots.C ? (getValuesAtLatLng(slots.C.gr, ll)?.[0] ?? null) : null;
-      const result = evalFn(vA, vB, vC, Math);
-      if (result == null) { row.push(ND); continue; }
-      row.push(result);
-      if (result < minR) minR = result;
-      if (result > maxR) maxR = result;
-    }
-    band0.push(row);
-    // Yield every 20 rows
-    if (r % 20 === 0) await new Promise(res => setTimeout(res, 0));
-  }
-
-  if (!isFinite(minR)) {
-    calcStatus.textContent = 'All pixels are NoData.';
-    calcBtn.disabled = false;
-    return;
-  }
-
-  const synGr = await parseGeoraster([band0], {
-    noDataValue: ND, projection: 4326,
-    xmin: lngMin, ymin: latMin, xmax: lngMax, ymax: latMax,
-    pixelWidth:  dLng, pixelHeight: dLat,
-  });
-
-  const resultStats = [{ min: minR, max: maxR }];
-  if (slots.R?.leafletLayer) map.removeLayer(slots.R.leafletLayer);
-
-  const resultLayer = buildLeafletLayer(synGr, resultStats, { band: 0, colormap: cmapName, opacity: 0.85 });
-  resultLayer.addTo(map);
-
-  slots.R = { gr: synGr, leafletLayer: resultLayer, bandStats: resultStats,
-              visible: true, colormap: cmapName, band: 0, opacity: 0.85, url: 'result' };
-  document.getElementById('row-R').style.display = '';
-  document.getElementById('name-R').textContent = formula.length > 22 ? formula.slice(0, 22) + '…' : formula;
-  buildLayerSettings('R');
-
-  calcStatus.textContent = `Done — range [${minR.toFixed(3)}, ${maxR.toFixed(3)}]`;
-  calcBtn.disabled = false;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   RGB COMPOSITE
-═══════════════════════════════════════════════════════════════════════ */
-function updateRgbBandSel(channel) {
-  const slotKey = document.getElementById(`comp-${channel}-slot`).value;
-  const sel     = document.getElementById(`comp-${channel}-band`);
-  const n = (slotKey !== '-' && slots[slotKey]) ? slots[slotKey].gr.numberOfRasters : 1;
-  const prev = parseInt(sel.value) || 0;
-  sel.innerHTML = Array.from({ length: n }, (_, i) => `<option value="${i}">b${i+1}</option>`).join('');
-  sel.value = Math.min(prev, n - 1);
-}
-
-async function runComposite() {
-  const compStatus = document.getElementById('comp-status');
-  const compBtn    = document.getElementById('comp-btn');
-
-  const cfg = ['r', 'g', 'b'].map(ch => ({
-    slot: document.getElementById(`comp-${ch}-slot`).value,
-    band: parseInt(document.getElementById(`comp-${ch}-band`).value),
-  }));
-
-  const activeChans = cfg.filter(c => c.slot !== '-' && slots[c.slot]);
-  if (!activeChans.length) { compStatus.textContent = 'Assign at least one channel.'; return; }
-
-  compStatus.textContent = 'Building composite…';
-  compBtn.disabled = true;
-
-  // Reference extent from first active channel
-  const refSlot = activeChans[0].slot;
-  const refBounds = slots[refSlot].leafletLayer.getBounds();
-  const latMin = refBounds.getSouth(), latMax = refBounds.getNorth();
-  const lngMin = refBounds.getWest(),  lngMax = refBounds.getEast();
-
-  const refGr = slots[refSlot].gr;
-  const MAX_PX = 300 * 300;
-  const scale  = Math.min(1, Math.sqrt(MAX_PX / (refGr.width * refGr.height)));
-  const outW   = Math.max(2, Math.round(refGr.width  * scale));
-  const outH   = Math.max(2, Math.round(refGr.height * scale));
-  const dLng   = (lngMax - lngMin) / outW;
-  const dLat   = (latMax - latMin) / outH;
-  const ND     = -9999;
-
-  const bands = [[], [], []]; // R, G, B arrays
-  const stats = cfg.map(c =>
-    (c.slot !== '-' && slots[c.slot]) ? slots[c.slot].bandStats[c.band] ?? { min: 0, max: 255 } : null
-  );
-
-  for (let r = 0; r < outH; r++) {
-    const rows = [[], [], []];
-    const lat = latMax - (r + 0.5) * dLat;
-    for (let c = 0; c < outW; c++) {
-      const ll = L.latLng(lat, lngMin + (c + 0.5) * dLng);
-      cfg.forEach(({ slot, band }, i) => {
-        if (slot === '-' || !slots[slot]) { rows[i].push(ND); return; }
-        const v = getValuesAtLatLng(slots[slot].gr, ll)?.[band];
-        rows[i].push(v ?? ND);
-      });
-    }
-    rows.forEach((row, i) => bands[i].push(row));
-    if (r % 20 === 0) await new Promise(res => setTimeout(res, 0));
-  }
-
-  const synGr = await parseGeoraster(bands, {
-    noDataValue: ND, projection: 4326,
-    xmin: lngMin, ymin: latMin, xmax: lngMax, ymax: latMax,
-    pixelWidth: dLng, pixelHeight: dLat,
-  });
-
-  if (slots.R?.leafletLayer) map.removeLayer(slots.R.leafletLayer);
-
-  const resultLayer = buildLeafletLayer(synGr, stats.map(s => s ?? { min: 0, max: 255 }),
-    { band: 0, colormap: 'grayscale', opacity: 0.9, rgb: true });
-  resultLayer.addTo(map);
-
-  const label = cfg.map((c, i) =>
-    c.slot !== '-' ? `${'RGB'[i]}=${c.slot}b${c.band+1}` : ''
-  ).filter(Boolean).join(' ');
-
-  slots.R = { gr: synGr, leafletLayer: resultLayer,
-              bandStats: stats.map(s => s ?? { min: 0, max: 255 }),
-              visible: true, opacity: 0.9, url: 'composite', isComposite: true };
-  document.getElementById('row-R').style.display = '';
-  document.getElementById('name-R').textContent = label.length > 22 ? label.slice(0, 22) + '…' : label;
-  buildLayerSettings('R');
-
-  compStatus.textContent = 'Done — ' + label;
-  compBtn.disabled = false;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
    UI WIRING
 ═══════════════════════════════════════════════════════════════════════ */
 const statusEl = document.getElementById('status');
@@ -890,39 +724,29 @@ document.getElementById('url-input').addEventListener('keydown', e => {
 });
 
 // Preset buttons
-document.querySelectorAll('.preset-btn').forEach(btn => {
+['A', 'B', 'C'].forEach(k => {
+  const btn = document.getElementById('pre-' + k);
   btn.addEventListener('click', () => loadSlot(btn.dataset.slot, btn.dataset.url));
+});
+document.getElementById('pre-all').addEventListener('click', () => {
+  ['A', 'B', 'C'].forEach(k => {
+    const btn = document.getElementById('pre-' + k);
+    loadSlot(btn.dataset.slot, btn.dataset.url);
+  });
 });
 
 // Per-slot visibility / expand / clear
-['A', 'B', 'C', 'R'].forEach(k => {
+SLOT_KEYS.forEach(k => {
   document.getElementById('vis-' + k).addEventListener('click', () => {
     const s = slots[k]; if (!s) return;
     s.visible = !s.visible;
     s.visible ? s.leafletLayer?.addTo(map) : (s.leafletLayer && map.removeLayer(s.leafletLayer));
     document.getElementById('vis-' + k).classList.toggle('dim', !s.visible);
   });
-  document.getElementById('expand-' + k)?.addEventListener('click', () => {
+  document.getElementById('expand-' + k).addEventListener('click', () => {
     document.getElementById('settings-' + k).classList.toggle('open');
   });
   document.getElementById('clear-' + k).addEventListener('click', () => clearSlot(k));
-});
-
-// Raster calculator
-populateCmapSelect(
-  document.getElementById('calc-cmap'),
-  document.getElementById('calc-cmap-preview'),
-  'spectral'
-);
-document.getElementById('calc-btn').addEventListener('click', runCalculator);
-document.getElementById('calc-formula').addEventListener('keydown', e => {
-  if (e.key === 'Enter') runCalculator();
-});
-
-// RGB composite
-document.getElementById('comp-btn').addEventListener('click', runComposite);
-['r', 'g', 'b'].forEach(ch => {
-  document.getElementById(`comp-${ch}-slot`).addEventListener('change', () => updateRgbBandSel(ch));
 });
 
 // Basemap radio
@@ -944,9 +768,9 @@ document.getElementById('wms-opacity').addEventListener('input', function () {
   if (wmsLayer) wmsLayer.setOpacity(parseInt(this.value) / 100);
 });
 
-// Hover info box
+// Hover info
 map.on('mousemove', e => {
-  const active = ['A','B','C','R'].filter(k => slots[k]?.gr && slots[k]?.visible);
+  const active = SLOT_KEYS.filter(k => slots[k]?.gr && slots[k].visible);
   if (!active.length) { infoBox.style.display = 'none'; return; }
   let rows = `<tr><td>Lat</td><td>${e.latlng.lat.toFixed(5)}</td></tr>
               <tr><td>Lng</td><td>${e.latlng.lng.toFixed(5)}</td></tr>`;
@@ -954,8 +778,8 @@ map.on('mousemove', e => {
     const vals = getValuesAtLatLng(slots[k].gr, e.latlng);
     if (!vals) return;
     vals.forEach((v, i) => {
-      const label = slots[k].gr.numberOfRasters > 1 ? `${k} b${i+1}` : k;
-      rows += `<tr><td>${label}</td><td>${v !== null ? v.toFixed(3) : 'nd'}</td></tr>`;
+      const lbl = slots[k].gr.numberOfRasters > 1 ? `${k} b${i + 1}` : k;
+      rows += `<tr><td>${lbl}</td><td>${v !== null ? v.toFixed(4) : 'nd'}</td></tr>`;
     });
   });
   infoBox.innerHTML = `<table>${rows}</table>`;
