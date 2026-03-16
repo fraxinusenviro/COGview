@@ -388,16 +388,15 @@ async function ensureProjection(epsg) {
    STATISTICS + STRETCH
 ═══════════════════════════════════════════════════════════════════════ */
 
-// Extract a flat sample of valid values from a band.
-// gr.values[band] is either a 2-D array (rows × cols) or a flat TypedArray.
+// gr.values[band] can be a 2-D array (rows × TypedArrays) or a flat TypedArray.
 function sampleBand(bandData, nd, maxSamples = 50000) {
+  if (!bandData) return [];
   const valid = [];
-  const is2D = Array.isArray(bandData) && (Array.isArray(bandData[0]) || ArrayBuffer.isView(bandData[0]));
+  const is2D = Array.isArray(bandData[0]) || ArrayBuffer.isView(bandData[0]);
   if (is2D) {
     const nRows = bandData.length;
     const nCols = bandData[0]?.length ?? 1;
-    const total = nRows * nCols;
-    const step  = Math.max(1, Math.floor(total / maxSamples));
+    const step  = Math.max(1, Math.floor((nRows * nCols) / maxSamples));
     let idx = 0;
     for (const row of bandData) {
       for (const v of row) {
@@ -415,7 +414,7 @@ function sampleBand(bandData, nd, maxSamples = 50000) {
 }
 
 function computeStretchStats(samples, mode, params) {
-  if (!samples || !samples.length) return { min: 0, max: 1 };
+  if (!samples || !samples.length) return null;
   switch (mode) {
     case 'minmax': {
       let mn = Infinity, mx = -Infinity;
@@ -441,7 +440,7 @@ function computeStretchStats(samples, mode, params) {
     case 'manual':
       return { min: params.manMin ?? 0, max: params.manMax ?? 1 };
     default:
-      return { min: 0, max: 1 };
+      return null;
   }
 }
 
@@ -472,36 +471,39 @@ function applyBlend(key, mode) {
 /* ═══════════════════════════════════════════════════════════════════════
    RENDERING
 ═══════════════════════════════════════════════════════════════════════ */
-function buildLeafletLayer(gr, bandStats, { band = 0, colormap = 'viridis', opacity = 1, pane = 'overlayPane' } = {}) {
-  const nd = gr.noDataValue;
-  const isND = v => v == null || (nd != null && v === nd) || isNaN(v) || !isFinite(v);
-  const { min, max } = bandStats[band] ?? { min: 0, max: 1 };
-  const range = max - min || 1;
 
+// Build a color function that reads from a mutable config object.
+// Mutate cfg then call layer.updateColors(makeColorFn(gr, cfg)) to redraw
+// without destroying the layer.
+function makeColorFn(gr, cfg) {
+  const nd = gr.noDataValue;
+  return values => {
+    const v = values[cfg.band];
+    if (v == null || (nd != null && v === nd) || isNaN(v) || !isFinite(v)) return null;
+    const { min, max } = cfg;
+    const [r, g, b] = sampleCmap(cfg.colormap, Math.max(0, Math.min(1, (v - min) / (max - min || 1))));
+    return `rgb(${r},${g},${b})`;
+  };
+}
+
+function buildLeafletLayer(gr, cfg, { opacity = 1, pane = 'overlayPane' } = {}) {
   return new GeoRasterLayer({
     georaster: gr, opacity, resolution: 128, pane,
-    pixelValuesToColorFn: values => {
-      const v = values[band];
-      if (isND(v)) return null;
-      const [r, g, b] = sampleCmap(colormap, Math.max(0, Math.min(1, (v - min) / range)));
-      return `rgb(${r},${g},${b})`;
-    },
+    pixelValuesToColorFn: makeColorFn(gr, cfg),
   });
 }
 
-function rerenderSlot(key) {
+// Recompute stretch for the active band and redraw via updateColors — no layer rebuild.
+function updateSlotColors(key) {
   const s = slots[key];
-  if (!s) return;
-
-  // Recompute stretch stats from stored samples
-  const stretchParams = { pLo: s.pLo, pHi: s.pHi, nSigma: s.nSigma, manMin: s.manMin, manMax: s.manMax };
-  s.bandStats = s.rawSamples.map(samp => computeStretchStats(samp, s.stretchMode, stretchParams));
-
-  if (s.leafletLayer) map.removeLayer(s.leafletLayer);
-  s.leafletLayer = buildLeafletLayer(s.gr, s.bandStats,
-    { band: s.band, colormap: s.colormap, opacity: s.opacity, pane: 'pane-' + key });
-  if (s.visible) s.leafletLayer.addTo(map);
-  applyBlend(key, s.blendMode);
+  if (!s?.leafletLayer) return;
+  const params = { pLo: s.pLo, pHi: s.pHi, nSigma: s.nSigma, manMin: s.manMin, manMax: s.manMax };
+  const stats  = computeStretchStats(s.rawSamples[s.band] ?? [], s.stretchMode, params)
+               ?? s.bandStats[s.band]   // keep last valid stats if recompute failed
+               ?? { min: 0, max: 1 };
+  s.bandStats[s.band] = stats;
+  Object.assign(s.colorCfg, { band: s.band, colormap: s.colormap, min: stats.min, max: stats.max });
+  s.leafletLayer.updateColors(makeColorFn(s.gr, s.colorCfg));
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -516,21 +518,31 @@ async function loadSlot(key, url) {
     const gr = await parseGeoraster(url);
     await ensureProjection(gr.projection);
 
-    // Sample raw values for stats
     const nd = gr.noDataValue;
-    const rawSamples = (gr.values || []).map(band => sampleBand(band, nd));
 
-    // Default: percentile 2–98
-    const bandStats = rawSamples.map(samp =>
-      computeStretchStats(samp, 'percentile', { pLo: 2, pHi: 98 }));
+    // Sample pixel values — gr.values may be empty for pure COG metadata loads,
+    // so fall back to georaster's built-in min/max arrays.
+    const rawSamples = (gr.values || []).map(b => sampleBand(b, nd));
 
-    const lyr = buildLeafletLayer(gr, bandStats,
-      { band: 0, colormap: 'viridis', opacity: 1, pane: 'pane-' + key });
+    const bandStats = rawSamples.map((samp, i) => {
+      if (samp.length > 0) {
+        return computeStretchStats(samp, 'percentile', { pLo: 2, pHi: 98 }) ?? { min: 0, max: 1 };
+      }
+      // Fallback: georaster often exposes per-band mins/maxs from TIFF metadata
+      if (gr.mins?.[i] != null && gr.maxs?.[i] != null && gr.maxs[i] !== gr.mins[i]) {
+        return { min: gr.mins[i], max: gr.maxs[i] };
+      }
+      return { min: 0, max: 1 };
+    });
+
+    // colorCfg is mutated in-place by updateSlotColors — the color fn closes over it
+    const colorCfg = { band: 0, colormap: 'viridis', min: bandStats[0].min, max: bandStats[0].max };
+    const lyr = buildLeafletLayer(gr, colorCfg, { opacity: 1, pane: 'pane-' + key });
     lyr.addTo(map);
     map.fitBounds(lyr.getBounds());
 
     slots[key] = {
-      gr, leafletLayer: lyr, rawSamples, bandStats,
+      gr, leafletLayer: lyr, colorCfg, rawSamples, bandStats,
       visible: true, band: 0, colormap: 'viridis', opacity: 1,
       stretchMode: 'percentile', pLo: 2, pHi: 98, nSigma: 2, manMin: null, manMax: null,
       blendMode: 'normal', url,
@@ -602,29 +614,31 @@ function buildLayerSettings(key) {
   // ── Events ──
   if (n > 1) {
     document.getElementById('band-' + key).addEventListener('change', e => {
-      s.band = parseInt(e.target.value); rerenderSlot(key);
+      s.band = parseInt(e.target.value);
+      updateSlotColors(key);
+      buildStretchParams(key); // refresh hint for new band
     });
   }
   document.getElementById('cmap-' + key).addEventListener('change', e => {
     s.colormap = e.target.value;
     drawCmapPreview(document.getElementById('cprev-' + key), s.colormap);
-    rerenderSlot(key);
+    updateSlotColors(key);
   });
   document.getElementById('stretch-' + key).addEventListener('change', e => {
     s.stretchMode = e.target.value;
-    buildStretchParams(key);
-    rerenderSlot(key);
+    updateSlotColors(key);
+    buildStretchParams(key); // rebuild param inputs for new mode
   });
   document.getElementById('blend-' + key).addEventListener('change', e => {
     s.blendMode = e.target.value;
-    applyBlend(key, s.blendMode);
+    applyBlend(key, s.blendMode); // CSS only — no layer rebuild
   });
   const opSl  = document.getElementById('op-' + key);
   const opLbl = document.getElementById('oplbl-' + key);
   opSl.addEventListener('input', () => {
     s.opacity = parseInt(opSl.value) / 100;
     opLbl.textContent = opSl.value + '%';
-    s.leafletLayer?.setOpacity(s.opacity);
+    s.leafletLayer?.setOpacity(s.opacity); // setOpacity — no layer rebuild
   });
 }
 
@@ -647,10 +661,10 @@ function buildStretchParams(key) {
         <input type="number" class="ls-num" id="phi-${key}" min="51" max="100" step="1" value="${s.pHi}">
         <span>%${hint}</span>`;
       document.getElementById('plo-' + key).addEventListener('change', e => {
-        s.pLo = parseFloat(e.target.value) || 2; rerenderSlot(key); buildStretchParams(key);
+        s.pLo = parseFloat(e.target.value) || 2; updateSlotColors(key); buildStretchParams(key);
       });
       document.getElementById('phi-' + key).addEventListener('change', e => {
-        s.pHi = parseFloat(e.target.value) || 98; rerenderSlot(key); buildStretchParams(key);
+        s.pHi = parseFloat(e.target.value) || 98; updateSlotColors(key); buildStretchParams(key);
       });
       break;
 
@@ -664,7 +678,7 @@ function buildStretchParams(key) {
         <input type="number" class="ls-num" id="nsig-${key}" min="0.5" max="6" step="0.5" value="${s.nSigma}">
         <span>σ${hint}</span>`;
       document.getElementById('nsig-' + key).addEventListener('change', e => {
-        s.nSigma = parseFloat(e.target.value) || 2; rerenderSlot(key); buildStretchParams(key);
+        s.nSigma = parseFloat(e.target.value) || 2; updateSlotColors(key); buildStretchParams(key);
       });
       break;
 
@@ -677,10 +691,10 @@ function buildStretchParams(key) {
         <span>Max</span>
         <input type="number" class="ls-num" id="mmax-${key}" value="${mx.toFixed(4)}" step="any">`;
       document.getElementById('mmin-' + key).addEventListener('change', e => {
-        s.manMin = parseFloat(e.target.value); rerenderSlot(key); buildStretchParams(key);
+        s.manMin = parseFloat(e.target.value); updateSlotColors(key); buildStretchParams(key);
       });
       document.getElementById('mmax-' + key).addEventListener('change', e => {
-        s.manMax = parseFloat(e.target.value); rerenderSlot(key); buildStretchParams(key);
+        s.manMax = parseFloat(e.target.value); updateSlotColors(key); buildStretchParams(key);
       });
       break;
     }
